@@ -1,5 +1,7 @@
 import urllib2
-from BeautifulSoup import BeautifulSoup
+import yql
+import json
+import constants
 
 class Equity:
     def __init__(self, ticker):
@@ -15,21 +17,46 @@ class Equity:
             Internal function to get financial information from yahoo finance website.
             This function will grab current stock price, and other generic information.
         """
-        url = "https://ca.finance.yahoo.com/q?s="+self.ticker
-        response = urllib2.urlopen(url)
-        soup = BeautifulSoup(response.read())
-        ticker_tag = "yfs_l84_" + self.ticker
-        self.price = soup.find("span",id=ticker_tag).text
 
+        y = yql.Public()
+        yqlEnv = "store://datatables.org/alltableswithkeys"
 
-    def __str__(self):
-        return str(self.price)
+        #define queries used for data gathering
+        query = "SELECT * FROM yahoo.finance.quote WHERE symbol in(\"" + self.ticker + "\")"
+        query2 = "SELECT * FROM yahoo.finance.balancesheet WHERE symbol =\"" + self.ticker + "\""
+        query3 = "SELECT * FROM yahoo.finance.incomestatement WHERE symbol =\"" + self.ticker + "\""
+        query4 = "SELECT * FROM yahoo.finance.keystats WHERE symbol =\""+self.ticker+"\""
+        query5 = "SELECT Industry FROM yahoo.finance.stocks WHERE symbol =\"" + self.ticker + "\""
+
+        #download data using yql. Possibly add cashflow
+        self.quote = y.execute(query, env=yqlEnv)
+        self.balancesheet = y.execute(query2, env=yqlEnv)
+        self.incomestatement = y.execute(query3, env=yqlEnv)
+        self.keystats = y.execute(query4, env = yqlEnv)
+        self.industryString = y.execute(query5,  env = yqlEnv)
+
+        #grab relevent data
+        self.industry = self.industryString.rows[0].get('Industry')
+        self.price = self.quote.rows[0].get('LastTradePriceOnly')
+        self.industryId = constants.industry[self.industry]
+
+        #grab relevant competitor data
+        competitors = "SELECT * FROM yahoo.finance.industry WHERE id="+str(self.industryId)
+        res = y.execute(competitors, env=yqlEnv)
+
+        self.competitorList = [];
+        for row in res.rows[0].get('company'):
+            if type(row) is dict:
+                self.competitorList.append(row.get('symbol'))
+        competitorString = ",".join('"{0}"'.format(w) for w in self.competitorList)
+
+        competitorsListQuery = "SELECT * FROM yahoo.finance.keystats WHERE symbol in("+competitorString+")"
+        self.otherCompanyData = y.execute(competitorsListQuery, env=yqlEnv)
+
 
 def main():
-    securities = ["aapl", "goog", "tsla", "spy"]
-    for s in securities:
-        a = Equity(s)
-        print "Price for " + s + " is " + str(a)
+    s = "gme"
+    a = Equity(s)
 
 if __name__ == "__main__":
     main()
