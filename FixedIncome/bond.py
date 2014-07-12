@@ -28,8 +28,9 @@ class Bond:
 
 def main():
     a = Bond(1000,0.08,10)
-    for r in linspace(0,0.1,0.01):
-        print a.price(i)
+    rates = [1,2,3,4,5,6,7,8,9,10,11,12]
+    for r in rates:
+        print "For rate " + str(r/100) + " price is " + str(a.price(r/100))
 
 if __name__ == "__main__":
     main()
