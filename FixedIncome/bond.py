@@ -2,9 +2,9 @@ from __future__ import division
 from numpy import linspace
 
 class Bond:
+    """Basic bond object"""
     def __init__(self, faceValue, coupon, maturity):
         """
-            Basic bond object,
             @param faceValue - The face value of the bond
             @param coupon    - The coupon rate on the bond
             @param maturity  - The number of years until maturity of the bond
@@ -16,21 +16,20 @@ class Bond:
 
     def price(self, rate):
         """
-        Calculate the price of a bond using a given rate
-        @param rate - The market rate to price the bond.
-        @return - The price of a bond
-
+            Calculate the price of a bond using a given rate
+            @param rate - The market rate to price the bond.
+            @return - The price of a bond
         """
-        annuity = self.coupon/rate*(1-1/((1+rate)**self.maturity))
-        fv = self.faceValue / (1+rate)**self.maturity
+        annuity = self.coupon / rate * (1 - 1 / ((1 + rate) ** self.maturity))
+        fv = self.faceValue / (1 + rate) ** self.maturity
         return annuity + fv
 
 
 def main():
-    a = Bond(1000,0.08,10)
-    rates = [1,2,3,4,5,6,7,8,9,10,11,12]
-    for r in rates:
-        print "For rate " + str(r/100) + " price is " + str(a.price(r/100))
-
+    bond = Bond(1000, 0.08, 10)
+    for r in xrange(1, 13):
+        template = "For rate {rate}, price is {price}"
+        print template.format(rate=r/100, price=bond.price(r/100)
+        
 if __name__ == "__main__":
     main()
