@@ -1,4 +1,4 @@
-Financial Priciing Library
+Financial Pricing Library
 ===
 
 Pricing Library for Financial Instruments

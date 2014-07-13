@@ -13,9 +13,44 @@ class Equity:
         self.getInfo()
         self.getCompetitorData()
 
-    def industryPrice(self):
-        priceByBook = pbook * float()
+    def industryBasedPrice(self, industryStats, stat):
+        """
+            Internal Generic to calcualte price by company stats
+        """
+        averagePE = sum(industryStats)/float(len(industryStats))
+        maxPE = max(industryStats)
+        minPE = min(industryStats)
+        companyVal = float(self.keystats.rows[0].get(stat).get('content'))
+        return [minPE*companyVal, averagePE*companyVal, maxPE*companyVal]
 
+    def industryPricebyPE(self):
+        """
+            Return computed stock price based on diluted EPS for company.
+            returns a list of [min, average, max]
+        """
+        return self.industryBasedPrice(self.industryPE, "DilutedEPS")
+
+    def industryPricebyBook(self):
+        """
+            Return computed stock price based on diluted EPS for company.
+            returns a list of [min, average, max]
+        """
+        return self.industryBasedPrice(self.industryPBook, "BookValuePerShare")
+
+    def industryEVbyRevenues(self):
+        """
+            Return computed stock price based on diluted EPS for company.
+            returns a list of [min, average, max]
+        """
+        EV = self.industryBasedPrice(self.industryEVRevenues, "Revenue")
+        return EV
+
+    def industryEVbyEBIT(self):
+        """
+            Return computed stock price based on diluted EPS for company.
+            returns a list of [min, average, max]
+        """
+        return self.industryBasedPrice(self.industryEVEBIT, "EBITDA")
 
     def getCompetitorData(self):
         self.industryPE = []
@@ -23,10 +58,14 @@ class Equity:
         self.industryEVEBIT = []
         self.industryPBook = []
         for comp in self.otherCompanyData.rows:
-            pe = comp.get('ForwardPE').get('content')
-            evrev = comp.get('EnterpriseValueRevenue').get('content')
-            evebit = comp.get('EnterpriseValueEBITDA').get('content')
-            pbook = comp.get('PriceBook').get('content')
+            try:
+                pe = comp.get('ForwardPE').get('content')
+                evrev = comp.get('EnterpriseValueRevenue').get('content')
+                evebit = comp.get('EnterpriseValueEBITDA').get('content')
+                pbook = comp.get('PriceBook').get('content')
+            except AttributeError:
+                pass
+
             try:
                 self.industryPE.append(float(pe))
             except ValueError:
@@ -95,11 +134,27 @@ class Equity:
         self.otherCompanyData = y.execute(competitorsListQuery, env=yqlEnv)
 
 def main():
-    a = Equity("gme")
-    print a.industryPE
-    print a.industryPBook
-    print a.industryEVEBIT
-    print a.industryEVRevenues
+    a = Equity("DRI")
+    priceByEPS = a.industryPricebyPE()
+    priceByBook = a.industryPricebyBook()
+    EVbyRev = a.industryEVbyRevenues()
+    EVbyEBITDA = a.industryEVbyEBIT()
+
+    print "min price by PE " + str(priceByEPS[0])
+    print "max price by PE " + str(priceByEPS[1])
+    print "average price by PE " + str(priceByEPS[2])
+
+    print "min price by Book " + str(priceByBook[0])
+    print "max price by Book " + str(priceByBook[1])
+    print "average price by Book " + str(priceByBook[2])
+
+    print "min EV by Rev " + str(EVbyRev[0])
+    print "max EV by Rev " + str(EVbyRev[1])
+    print "average EV by Rev " + str(EVbyRev[2])
+
+    print "min EV by EBITDA" + str(EVbyEBITDA[0])
+    print "max EV by EBITDA " + str(EVbyEBITDA[1])
+    print "average EV by EBITDA" + str(EVbyEBITDA[2])
 
 if __name__ == "__main__":
     main()
