@@ -11,11 +11,52 @@ class Equity:
         """
         self.ticker = ticker
         self.getInfo()
+        self.getCompetitorData()
+
+    def industryPrice(self):
+        priceByBook = pbook * float()
+
+
+    def getCompetitorData(self):
+        self.industryPE = []
+        self.industryEVRevenues = []
+        self.industryEVEBIT = []
+        self.industryPBook = []
+        for comp in self.otherCompanyData.rows:
+            pe = comp.get('ForwardPE').get('content')
+            evrev = comp.get('EnterpriseValueRevenue').get('content')
+            evebit = comp.get('EnterpriseValueEBITDA').get('content')
+            pbook = comp.get('PriceBook').get('content')
+            try:
+                self.industryPE.append(float(pe))
+            except ValueError:
+                pass
+            try:
+                self.industryPBook.append(float(pbook))
+            except ValueError:
+                pass
+            try:
+                self.industryEVEBIT.append(float(evebit))
+            except ValueError:
+                pass
+            try:
+                self.industryEVRevenues.append(float(evrev))
+            except ValueError:
+                pass
 
     def getInfo(self):
         """
             Internal function to get financial information from yahoo finance website.
-            This function will grab current stock price, and other generic information.
+            This function will grab current stock price, and other generic information for the
+            security given by the ticker in the constructor.
+
+            Data Collected:
+                self.quote is quote information for the stock
+                self.keystats is the the key stats defined in yql
+                self.balancesheet is the balance sheet
+                self.incomestatement is the income statement
+                self.cashflow is the cashflow statement
+                self.otherComapnyData is a list of all of the data for competitor companies
         """
 
         y = yql.Public()
@@ -33,10 +74,10 @@ class Equity:
         self.balancesheet = y.execute(query2, env=yqlEnv)
         self.incomestatement = y.execute(query3, env=yqlEnv)
         self.keystats = y.execute(query4, env = yqlEnv)
-        self.industryString = y.execute(query5,  env = yqlEnv)
+        industryString = y.execute(query5,  env = yqlEnv)
 
         #grab relevent data
-        self.industry = self.industryString.rows[0].get('Industry')
+        self.industry = industryString.rows[0].get('Industry')
         self.price = self.quote.rows[0].get('LastTradePriceOnly')
         self.industryId = constants.industry[self.industry]
 
@@ -53,10 +94,12 @@ class Equity:
         competitorsListQuery = "SELECT * FROM yahoo.finance.keystats WHERE symbol in("+competitorString+")"
         self.otherCompanyData = y.execute(competitorsListQuery, env=yqlEnv)
 
-
 def main():
-    s = "gme"
-    a = Equity(s)
+    a = Equity("gme")
+    print a.industryPE
+    print a.industryPBook
+    print a.industryEVEBIT
+    print a.industryEVRevenues
 
 if __name__ == "__main__":
     main()
