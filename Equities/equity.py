@@ -5,8 +5,7 @@ import constants
 
 class Equity:
     def __init__(self, ticker):
-        """
-            Equity Object.
+        """ Equity Object.
             @param ticker - The ticker for the stock. i.e. AAPL
         """
         self.ticker = ticker
@@ -63,25 +62,16 @@ class Equity:
                 evrev = comp.get('EnterpriseValueRevenue').get('content')
                 evebit = comp.get('EnterpriseValueEBITDA').get('content')
                 pbook = comp.get('PriceBook').get('content')
+                try:
+                    self.industryPE.append(float(pe))
+                    self.industryPBook.append(float(pbook))
+                    self.industryEVEBIT.append(float(evebit))
+                    self.industryEVRevenues.append(float(evrev))
+                except ValueError:
+                    pass
             except AttributeError:
                 pass
 
-            try:
-                self.industryPE.append(float(pe))
-            except ValueError:
-                pass
-            try:
-                self.industryPBook.append(float(pbook))
-            except ValueError:
-                pass
-            try:
-                self.industryEVEBIT.append(float(evebit))
-            except ValueError:
-                pass
-            try:
-                self.industryEVRevenues.append(float(evrev))
-            except ValueError:
-                pass
 
     def getInfo(self):
         """
@@ -134,7 +124,7 @@ class Equity:
         self.otherCompanyData = y.execute(competitorsListQuery, env=yqlEnv)
 
 def main():
-    a = Equity("DRI")
+    a = Equity("gme")
     priceByEPS = a.industryPricebyPE()
     priceByBook = a.industryPricebyBook()
     EVbyRev = a.industryEVbyRevenues()

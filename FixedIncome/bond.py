@@ -27,9 +27,9 @@ class Bond:
 
 def main():
     bond = Bond(1000, 0.08, 10)
+    template = "For rate {}, price is {}"
     for r in xrange(1, 13):
-        template = "For rate {rate}, price is {price}"
-        print template.format(rate=r/100, price=bond.price(r/100)
-        
+        print template.format(r/100, bond.price(r/100))
+
 if __name__ == "__main__":
     main()
